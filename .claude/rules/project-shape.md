@@ -9,7 +9,8 @@ repo/
     admin/                 # Laravel + Filament — internal panel(s), see filament-panels.md
       app/Providers/Filament/AdminPanelProvider.php
       app/Filament/Admin/Resources/   # consumes packages/* Models/Actions, never the other way around
-    web/                   # Nuxt — public-facing frontend, talks to apps/backend's API over HTTP
+    web/                   # not scaffolded here yet — a Nuxt frontend, or a project of its own,
+                            # dropped in later; only ever talks to apps/backend's API over HTTP
   packages/
     withdrawals/            # the reference module — see naming-conventions.md
     {module}/
@@ -21,7 +22,7 @@ repo/
 
 - **`apps/backend`** owns the API and every write path — anything that mutates a `packages/*` Model with business rules behind it goes through this app or through a queue worker it runs, calling the module's `Actions/` (see `architecture.md`). It's the one app every other surface ultimately depends on.
 - **`apps/admin`** is a separate Laravel install specifically because an internal panel (Filament) has a different deploy cadence, different auth surface, and different operational profile than the public API — see `filament-panels.md` for how it consumes `packages/*` without ever bypassing the Action rule.
-- **`apps/web`** doesn't touch `packages/*` or Composer at all — it's a plain HTTP client of `apps/backend`'s API, living in the same repo purely for the convenience of coordinated changes (a backend endpoint and the frontend page that calls it can land in one commit).
+- **`apps/web`** is not scaffolded in this repo yet — whatever ends up there (Nuxt or otherwise) doesn't touch `packages/*` or Composer at all, it's a plain HTTP client of `apps/backend`'s API. It's documented here because it's still part of the monorepo idea: living alongside the backend for the convenience of coordinated changes (a backend endpoint and the frontend page that calls it can land in one commit), not because it shares any PHP mechanism with `packages/*`.
 - A single repository (rather than one per app) means a business-rule change that touches both `apps/backend` and `apps/admin` — because both call the same `packages/*` Action — lands in one PR, with no cross-repo version to pin or coordinate.
 
 ## If you don't need the split

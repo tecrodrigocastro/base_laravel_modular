@@ -1,6 +1,6 @@
 # base_laravel_modular
 
-Laravel modular-monolith **monorepo** template: `apps/backend` (API), `apps/admin` (Filament), `apps/web` (Nuxt), and `packages/{module}` (one Composer package per business module, shared by `apps/backend` and `apps/admin`). Meant to be cloned/copied as the starting point for a new project, not extended into a product itself — same spirit as [`base_clean_arch_bloc`](../base_clean_arch_bloc) for Flutter.
+Laravel modular-monolith **monorepo** template: `apps/backend` (API), `apps/admin` (Filament), and `packages/{module}` (one Composer package per business module, shared by both apps). `apps/web` is reserved but not scaffolded here — a separate frontend template gets dropped in and referenced later; it only ever talks to `apps/backend`'s HTTP API, never `packages/*`. Meant to be cloned/copied as the starting point for a new project, not extended into a product itself — same spirit as [`base_clean_arch_bloc`](../base_clean_arch_bloc) for Flutter.
 
 Detailed conventions live in `.claude/rules/` and are loaded automatically. `packages/withdrawals/` is the reference module — a complete, working example of every convention below (Model, Action, DTO, Enum, Event, Contract, Adapter, migration, tests) — imitate its shape when creating a new module, the same way `auth` is the reference feature in `base_clean_arch_bloc`. `apps/admin`'s `WithdrawalResource` is the reference Filament Resource consuming it.
 
@@ -12,7 +12,7 @@ apps/
   admin/                      # Laravel + Filament — internal panel(s)
     app/Providers/Filament/AdminPanelProvider.php
     app/Filament/Admin/Resources/WithdrawalResource.php   # imports Acme\Withdrawals\Models\Withdrawal
-  web/                        # Nuxt — public frontend, talks to apps/backend's API over HTTP only
+  web/                        # not scaffolded here yet — frontend template dropped in later, HTTP-only
 packages/
   withdrawals/                 # reference module
     composer.json              # type: library, own vendor/name
@@ -36,7 +36,6 @@ Why a monorepo, why split into three apps: `.claude/rules/project-shape.md`.
 ```bash
 cd apps/backend && composer install && cp .env.example .env && php artisan key:generate && php artisan migrate
 cd apps/admin   && composer install && cp .env.example .env && php artisan key:generate && php artisan migrate
-cd apps/web     && npm install
 
 cd apps/backend && ./vendor/bin/pest              # full suite, including every packages/*/tests
 cd apps/backend && ./vendor/bin/pest ../../packages/withdrawals/tests
@@ -50,7 +49,7 @@ cd apps/backend && php artisan modules:list
 - Any write to a Model with business rules behind it goes through that module's `Actions/`, never a raw `->save()`/`->update()` called from outside the package. This is what keeps `apps/backend` and `apps/admin` from drifting out of sync on the same rule.
 - Modules likely to become a standalone service later (heavy queue/latency profile — payments, moderation-style workloads) get a `Contract` + `Adapter` pair from day one: the Action talks to the interface, the Adapter is swappable from "local Eloquent" to "remote API client" without touching callers.
 - No module reaches into another module's tables directly — no cross-package Eloquent relationship, no raw join. Cross-module reads/writes go through that module's own Action/Contract.
-- `apps/web` never touches `packages/*` or a database directly — it only calls `apps/backend`'s HTTP API.
+- `apps/web`, whenever it's dropped in, never touches `packages/*` or a database directly — it only calls `apps/backend`'s HTTP API.
 
 ## Generator
 
@@ -64,8 +63,8 @@ Module scaffolding runs on top of [`internachi/modular`](https://github.com/Inte
 
 - `.claude/skills/new-module/` wrapping `make:module` with this template's extra conventions (Actions/Contracts/Adapters, test stub, wiring) — codifying the steps taken by hand to build `packages/withdrawals`.
 - Additional Filament panels beyond `admin` (e.g. a second audience), following the same `PanelProvider` shape.
-- `apps/web` is only the bare Nuxt scaffold — no actual page calling `apps/backend`'s API yet.
+- `apps/web`: a separate frontend template (its own repo, mirroring the spirit of this one and of `base_clean_arch_bloc`) gets built, then referenced/dropped in here as a sibling of `apps/backend` and `apps/admin`.
 
-Done: this repo is a real, runnable monorepo — `apps/backend` and `apps/admin` both consume `packages/withdrawals` (proving the path-repository + `ServiceProvider` auto-discovery mechanism works across two independent Laravel apps, not just within one), `apps/admin` has a working Filament panel over it, and `apps/web` is scaffolded. Not just documented — proven.
+Done: this repo is a real, runnable monorepo — `apps/backend` and `apps/admin` both consume `packages/withdrawals` (proving the path-repository + `ServiceProvider` auto-discovery mechanism works across two independent Laravel apps, not just within one), and `apps/admin` has a working Filament panel over it. Not just documented — proven.
 
 See `.claude/rules/naming-conventions.md` before creating new files, and `.claude/rules/architecture.md` for the full rationale behind the Action/Contract/Adapter rules.
