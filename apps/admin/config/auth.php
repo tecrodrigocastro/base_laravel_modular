@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Admin;
 use App\Models\User;
 
 return [
@@ -44,11 +45,11 @@ return [
         ],
 
         // One guard per Filament panel/audience — see .claude/rules/filament-panels.md
-        // in the repo root. Reuses the "users" provider here for simplicity; a real
-        // project typically gives each audience its own model/table.
+        // in the repo root. 'admin' has its own model/table (App\Models\Admin), separate
+        // from the 'web' guard's App\Models\User.
         'admin' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'admins',
         ],
     ],
 
@@ -75,10 +76,10 @@ return [
             'model' => env('AUTH_MODEL', User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => Admin::class,
+        ],
     ],
 
     /*

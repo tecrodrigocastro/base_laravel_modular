@@ -1,40 +1,56 @@
 # Filament panels: structure and reference
 
-`apps/admin` follows the same technique for every panel it hosts: **one `PanelProvider` per surface/audience**, each with its own `id()`, `path()` and `authGuard()`, discovering its Resources from its own namespaced folder so panels never leak into each other's navigation even though they're compiled into the same app. `apps/admin/app/Providers/Filament/AdminPanelProvider.php` is a real, working instance of this — `id('admin')`, `path('admin')`, `authGuard('admin')` (guard configured in `apps/admin/config/auth.php`), discovering from `app/Filament/Admin/Resources`. `WithdrawalResource` in that folder imports `Acme\Withdrawals\Models\Withdrawal` straight from the shared package — the concrete example of the next paragraph.
+`apps/admin` hosts three panels, each its own `PanelProvider` in `app/Providers/Filament/`, registered conditionally from `AppServiceProvider::register()` via `config/panels.php` (`admin_panel_enabled`, `app_panel_enabled`, `guest_panel_enabled` — flip one off if a project doesn't need that audience):
 
-## Going further
+| Panel | Provider | `id()` / `path()` | `authGuard()` | Model / table |
+|---|---|---|---|---|
+| Admin | `AdminPanelProvider` | `admin` / `/admin` | `admin` | `App\Models\Admin` / `admins` |
+| App (regular users) | `AppPanelProvider` | `app` / `/app` | `web` | `App\Models\User` / `users` |
+| Guest (public, unauthenticated) | `GuestPanelProvider` | `guest` / `/` | none (`userMenu(false)`) | — |
 
-`apps/admin` here only has a bare `admin` panel wired — no login customization, no profile page, no PWA, no i18n. For a fuller starting point that already solves those, [`jeffersongoncalves/filakitv5`](https://github.com/jeffersongoncalves/filakitv5) is a working Laravel + Filament kit with multiple panels, each its own auth guard, plus login/profile/PWA/i18n already built. Its `AdminPanelProvider` follows the same shape `apps/admin` does here:
+Each discovers its own namespaced Resources/Pages/Widgets/Clusters folder (`app/Filament/Admin/Resources`, `app/Filament/App/Resources`, `app/Filament/Guest/Resources`) so panels never leak into each other's navigation even though they're compiled into the same app. `AdminPanelProvider`'s `WithdrawalResource` imports `Acme\Withdrawals\Models\Withdrawal` straight from the shared package — the concrete example of "How this relates to `packages/*`" below.
 
-```php
-class AdminPanelProvider extends PanelProvider
-{
-    public function panel(Panel $panel): Panel
-    {
-        return $panel
-            ->id('admin')
-            ->path('admin')
-            ->authGuard('admin')
-            ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
-            ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
-            ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
-            // login, profile, plugins, middleware...
-            ;
-    }
-}
+This structure, the `Admin`/`User` models, the `admins`/`users`/`notifications` migrations, and the plugin stack below were adapted from [`jeffersongoncalves/filakitv5`](https://github.com/jeffersongoncalves/filakitv5) (MIT), stripped of its branding (logo, "Filakit" naming, `filakit.*` config keys renamed to `panels.*`).
+
+## Plugins already wired (all three panels, where it makes sense)
+
+| Package | What it adds |
+|---|---|
+| `jeffersongoncalves/filament-admin`, `filament-user` | The `Admin`/`User` base models + Filament resources for managing them |
+| `jeffersongoncalves/filament-pwa` + `jeffersongoncalves/laravel-pwa-favicon` | Installable PWA: `/manifest.json`, full icon set, `<head>` metas — see "Vite and the favicon assets" below |
+| `jeffersongoncalves/laravel-favicon` | Plain `/favicon.ico` + `/browserconfig.xml` outside the PWA manifest |
+| `joaopaulolndev/filament-edit-profile` | The "My Profile" page (locale, theme color, avatar, Sanctum tokens, MFA, browser sessions) |
+| `dutchcodingcompany/filament-developer-logins` | One-click login as any seeded user/admin, gated to `app()->environment('local')` |
+| `stechstudio/filament-impersonate` | "Log in as this user" action, configured in `AppServiceProvider::configureImpersonate()` |
+| `achyutn/filament-log-viewer` | `/admin/logs` — reads `storage/logs/laravel.log` from the panel, admin panel only |
+| `jeffersongoncalves/filament-additional-information`, `filament-sensible-defaults` | Misc Filament defaults FilaKit ships with; safe to drop if unused |
+
+## Vite and the favicon assets
+
+`jeffersongoncalves/laravel-favicon`/`laravel-pwa-favicon` resolve every icon through `Vite::asset('resources/favicon/...')`, which means each file under `resources/favicon/` must be its own entry in the Vite build — a plain `<img>`-style reference wouldn't need this, but these packages' PHP-side `Vite::asset()` calls do. `vite.config.js` globs the directory automatically:
+
+```js
+import { globSync } from 'glob';
+const faviconAssets = globSync('resources/favicon/**/*');
+// ...
+input: [/* css/js entries */, ...faviconAssets],
 ```
 
-Repeat this shape once per audience that needs its own panel in `apps/admin` — e.g. a second `PanelProvider` with `id('suppliers')`, `path('suppliers')`, `authGuard('supplier')`, discovering from `app_path('Filament/Suppliers/Resources')`.
+Run `npm run build` (or `npm run dev`) before booting the app — without a built manifest, every panel throws `Vite manifest not found`.
+
+## Adding another panel
+
+Copy the shape of `GuestPanelProvider` (simplest, no login) or `AppPanelProvider` (authenticated, has profile/plugins) for a new audience — e.g. a `SuppliersPanelProvider` with `id('suppliers')`, `path('suppliers')`, `authGuard('supplier')`, discovering from `app_path('Filament/Suppliers/Resources')`. Register it in `AppServiceProvider::register()` behind a new `config('panels.suppliers_panel_enabled')` flag, and add the matching guard/provider pair to `config/auth.php` (see "Auth guards" below).
 
 ## How this relates to `packages/*`
 
 Panels and packages are **orthogonal groupings** of the same underlying domain:
 
 - A **package** (`packages/{module}/`) groups Models/Actions/DTOs by *what business domain they belong to* (products, withdrawals, moderation...).
-- A **panel** groups Filament Resources by *who is allowed to see them* (an internal admin, an external partner, a specific role).
+- A **panel** groups Filament Resources by *who is allowed to see them* (an internal admin, a regular user, the public).
 
-A single panel's Resources can — and usually will — span multiple packages (an admin panel showing both `Product` and `Order` resources, each backed by its own package). The `Resources/` classes themselves are presentation code and live in the Filament app's own `app/Filament/{Panel}/Resources/`, never inside `packages/*` — a package should not know or care that Filament exists. A Resource class imports the package's Model/Action, not the other way around.
+A single panel's Resources can — and usually will — span multiple packages (the admin panel showing both `Withdrawal` and a future `Order` resource, each backed by its own package). The `Resources/` classes themselves are presentation code and live in the Filament app's own `app/Filament/{Panel}/Resources/`, never inside `packages/*` — a package should not know or care that Filament exists. A Resource class imports the package's Model/Action, not the other way around, and any Resource action beyond plain CRUD (approve, cancel, ...) calls the module's Action rather than mutating the Model inline.
 
 ## Auth guards
 
-One guard per audience, configured in `apps/admin/config/auth.php` (`admin`, and one per additional panel), matched 1:1 with each `PanelProvider`'s `->authGuard()`. This is what keeps, say, a supplier from ever hitting the admin panel's routes — Filament's panel middleware rejects it at the guard level, before any authorization logic in a Resource runs.
+One guard per audience, configured in `apps/admin/config/auth.php` — `admin` (provider `admins`, model `App\Models\Admin`) and `web` (provider `users`, model `App\Models\User`), matched 1:1 with each `PanelProvider`'s `->authGuard()`. This is what keeps, say, a regular user from ever hitting the admin panel's routes — Filament's panel middleware rejects it at the guard level, before any authorization logic in a Resource runs. A new panel for a new audience gets its own guard + provider pair here, not a reused one, even if it reuses the `users` table for simplicity early on.
