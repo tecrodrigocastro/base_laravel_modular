@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aa6b44aaf39b0e7d40ab83aa6562da74",
+    "content-hash": "70108be3b81a3594128e1455a8ac57c9",
     "packages": [
         {
             "name": "achyutn/filament-log-viewer",
@@ -91,6 +91,37 @@
                 }
             ],
             "time": "2026-09-12T09:31:32+00:00"
+        },
+        {
+            "name": "acme/identity",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../../packages/identity",
+                "reference": "7fb80f130d9637a42f371c0a7a66f87369ae40e1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Acme\\Identity\\Providers\\IdentityServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Acme\\Identity\\": "src/",
+                    "Acme\\Identity\\Tests\\": "tests/",
+                    "Acme\\Identity\\Database\\Factories\\": "database/factories/",
+                    "Acme\\Identity\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "acme/withdrawals",

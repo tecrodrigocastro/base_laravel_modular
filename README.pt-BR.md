@@ -19,6 +19,8 @@ make check         # rector --dry-run + pint --test + phpstan + pest, nos dois a
 
 Todo módulo de negócio é seu próprio pacote Composer em `packages/{modulo}/` — Models, Actions, DTOs, Enums, Events, migrations próprias, `ServiceProvider` próprio. Esse formato de pacote nunca muda, independente de quantos apps existem por cima dele — aqui, `apps/backend` (a API, dona de todo caminho de escrita) e `apps/admin` (painel interno em Filament) exigem o mesmo `packages/*` via path repository do Composer. O `apps/web`, quando entrar, vai ser só um cliente HTTP comum da API do `apps/backend` — nunca toca em `packages/*` nem em banco de dados.
 
+Um pacote não serve só pra módulo de negócio com potencial de extração (`withdrawals`) — o `identity` (`User`/`Admin`) é compartilhado por outro motivo: os dois apps precisam autenticar e enxergar a mesma linha, então o Model/migration só pode viver num lugar só. Ver [`.claude/rules/architecture.md`](.claude/rules/architecture.md), "Two different reasons a Model must live in `packages/*`".
+
 Por que monorepo, por que os apps são divididos assim, e o que fazer se você não precisar dessa divisão: [`.claude/rules/project-shape.md`](.claude/rules/project-shape.md).
 
 ## Estrutura
@@ -45,6 +47,8 @@ packages/
     database/migrations/
     phpstan.neon                 # incluído automaticamente por apps/backend/phpstan.modules.php
     tests/
+  identity/                      # segundo módulo de referência — exigido pelos dois apps, sem Filament
+    src/Models/{User,Admin}.php
 Makefile                         # orquestra os dois apps
 ```
 

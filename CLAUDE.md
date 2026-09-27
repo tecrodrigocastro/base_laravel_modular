@@ -4,6 +4,8 @@ Laravel modular-monolith **monorepo** template: `apps/backend` (API), `apps/admi
 
 Detailed conventions live in `.claude/rules/` and are loaded automatically. `packages/withdrawals/` is the reference module — a complete, working example of every convention below (Model, Action, DTO, Enum, Event, Contract, Adapter, migration, tests) — imitate its shape when creating a new module, the same way `auth` is the reference feature in `base_clean_arch_bloc`. Use `.claude/skills/new-module/` to scaffold a new one instead of copying `withdrawals` by hand. `apps/admin`'s `WithdrawalResource` is the reference Filament Resource consuming it.
 
+`packages/identity/` is a second reference module, of a different kind: it holds `User`/`Admin`, required by **both** apps because they must authenticate against and reference the literal same rows, not because it's a service-extraction candidate. See `.claude/rules/architecture.md`, "Two different reasons a Model must live in `packages/*`", before assuming every module needs a Contract/Adapter pair the way `withdrawals` does.
+
 ## Structure
 
 ```
@@ -28,6 +30,8 @@ packages/
     database/migrations/
     phpstan.neon                # auto-included by apps/backend/phpstan.modules.php
     tests/
+  identity/                     # second reference module — see the note above
+    src/Models/{User,Admin}.php # required by apps/backend AND apps/admin, Filament-free
 Makefile                        # orchestrates both apps — make check/format/test/new-module
 ```
 

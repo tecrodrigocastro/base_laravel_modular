@@ -4,8 +4,40 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bd93b2021d64d9cbd2e0875336e0b1d3",
+    "content-hash": "e5b2d1e5811b29e207863255e70bae60",
     "packages": [
+        {
+            "name": "acme/identity",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../../packages/identity",
+                "reference": "2ef3c28766d2f54403709aaff511894ccd983998"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Acme\\Identity\\Providers\\IdentityServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Acme\\Identity\\": "src/",
+                    "Acme\\Identity\\Tests\\": "tests/",
+                    "Acme\\Identity\\Database\\Factories\\": "database/factories/",
+                    "Acme\\Identity\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
         {
             "name": "acme/withdrawals",
             "version": "1.0.0",

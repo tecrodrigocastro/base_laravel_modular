@@ -47,6 +47,17 @@ final class RemoteWithdrawalGatewayAdapter implements WithdrawalGatewayContract
 
 Modules without this heavy profile (a simple catalog, a settings module) don't need a Contract/Adapter pair up front — that's premature abstraction for something unlikely to ever move. Add it when a module is actually a serious extraction candidate, not by default.
 
+## Two different reasons a Model must live in `packages/*`
+
+`withdrawals` and `identity` end up in the same place (`packages/*`) for two different reasons — worth keeping distinct, because the second one is easy to miss:
+
+- **A business module** (`withdrawals`) is a package so its boundary can be enforced and so it's easy to extract later. Nothing stops it from living app-local if a project genuinely only has one app.
+- **A shared identity Model** (`identity`'s `User`/`Admin`) is a package because **two apps must authenticate against and reference the literal same row**, not because it's a microservice candidate. `apps/backend` and `apps/admin` each ran their own copy of a `users` migration early in this template's history — two independent tables, two independent schemas, silently diverging (`apps/admin`'s FilaKit-derived migration had `status`/`avatar_url`/`custom_fields`/`locale`/`theme_color` columns `apps/backend`'s default Laravel migration didn't). A user created through the API was invisible to the admin panel. That's not a Contract/Adapter problem — the fix is putting the Model, migration and factory in exactly one package both apps require, the same way `withdrawals` is shared, just for a different reason.
+
+Panel-specific concerns (Filament's `FilamentUser`/`HasAvatar` contracts) still don't belong in the shared package — `apps/admin`'s `App\Models\User`/`App\Models\Admin` are thin subclasses of `Acme\Identity\Models\User`/`Admin` that add those contracts locally, so `acme/identity` itself never depends on Filament and stays safe for `apps/backend` to require too.
+
+When adding a new module, ask both questions independently: *"does this need a Contract/Adapter because it might become a service?"* and *"does this Model represent something more than one app must see identically?"* — a module can need either, both, or neither.
+
 ## Cross-module access
 
 A module never queries another module's tables directly — no Eloquent relationship crossing a package boundary, no raw join reaching into a table another package owns. If module `orders` needs data that belongs to `products`, it calls `products`' own Action/Contract, exactly as an external caller would. This is the same discipline as the Action rule, aimed at a different direction: it keeps every module's internal schema free to change without a silent break somewhere else in the monolith, and it means a cross-module call already looks exactly like the network call it may become after extraction.
@@ -61,8 +72,8 @@ Each consuming app (`apps/backend`, `apps/admin`) declares the packages director
     { "type": "path", "url": "../../packages/*" }
   ],
   "require": {
-    "acme/communities": "*",
-    "acme/withdrawals": "*"
+    "acme/identity": "^1.0.0",
+    "acme/withdrawals": "^1.0.0"
   }
 }
 ```

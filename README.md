@@ -19,6 +19,8 @@ make check         # rector --dry-run + pint --test + phpstan + pest, across bot
 
 Every business module is its own Composer package under `packages/{module}/` — Models, Actions, DTOs, Enums, Events, its own migrations, its own `ServiceProvider`. That package shape never changes regardless of how many apps sit on top of it — here, `apps/backend` (the API, owning every write path) and `apps/admin` (an internal Filament panel) both require the same `packages/*` via Composer path repositories. `apps/web`, whenever it's dropped in, is a plain HTTP client of `apps/backend`'s API — it never touches `packages/*` or a database.
 
+A package isn't only for business modules with extraction potential (`withdrawals`) — `identity` (`User`/`Admin`) is shared for a different reason: both apps must authenticate against and reference the literal same rows, so the Model/migration can only live in one place. See [`.claude/rules/architecture.md`](.claude/rules/architecture.md), "Two different reasons a Model must live in `packages/*`".
+
 Why a monorepo, why apps are split this way, and what to do if you don't need the split: [`.claude/rules/project-shape.md`](.claude/rules/project-shape.md).
 
 ## Structure
@@ -45,6 +47,8 @@ packages/
     database/migrations/
     phpstan.neon                # auto-included by apps/backend/phpstan.modules.php
     tests/
+  identity/                     # second reference module — required by both apps, Filament-free
+    src/Models/{User,Admin}.php
 Makefile                        # orchestrates both apps
 ```
 

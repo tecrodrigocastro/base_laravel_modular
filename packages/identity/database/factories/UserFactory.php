@@ -1,8 +1,8 @@
 <?php
 
-namespace Database\Factories;
+namespace Acme\Identity\Database\Factories;
 
-use App\Models\User;
+use Acme\Identity\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -12,19 +12,25 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
     /**
-     * Define the model's default state.
-     *
+     * Resolve to whichever concrete class an app configured for the 'users'
+     * auth provider (e.g. App\Models\User extends Acme\Identity\Models\User),
+     * so User::factory() in either app creates the app's own subclass.
+     */
+    public function modelName(): string
+    {
+        return config('auth.providers.users.model') ?: User::class;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
+            'status' => true,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
@@ -33,13 +39,17 @@ class UserFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
     public function unverified(): static
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => false,
         ]);
     }
 }

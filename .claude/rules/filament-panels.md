@@ -10,13 +10,13 @@
 
 Each discovers its own namespaced Resources/Pages/Widgets/Clusters folder (`app/Filament/Admin/Resources`, `app/Filament/App/Resources`, `app/Filament/Guest/Resources`) so panels never leak into each other's navigation even though they're compiled into the same app. `AdminPanelProvider`'s `WithdrawalResource` imports `Acme\Withdrawals\Models\Withdrawal` straight from the shared package — the concrete example of "How this relates to `packages/*`" below.
 
-This structure, the `Admin`/`User` models, the `admins`/`users`/`notifications` migrations, and the plugin stack below were adapted from [`jeffersongoncalves/filakitv5`](https://github.com/jeffersongoncalves/filakitv5) (MIT), stripped of its branding (logo, "Filakit" naming, `filakit.*` config keys renamed to `panels.*`).
+This panel structure, the `admins`/`notifications` migration, and the plugin stack below were adapted from [`jeffersongoncalves/filakitv5`](https://github.com/jeffersongoncalves/filakitv5) (MIT), stripped of its branding (logo, "Filakit" naming, `filakit.*` config keys renamed to `panels.*`). `App\Models\User`/`App\Models\Admin` deviate from FilaKit's own shape on purpose: they extend `Acme\Identity\Models\User`/`Admin` (from `packages/identity`, required by `apps/backend` too) instead of `jeffersongoncalves/filament-user`'s and `filament-admin`'s own base Models, and add the `FilamentUser`/`HasAvatar` contracts locally rather than inheriting them — see `architecture.md`, "Two different reasons a Model must live in `packages/*`", for why the `users`/`admins` tables specifically had to be shared instead of left one-per-app like FilaKit itself does.
 
 ## Plugins already wired (all three panels, where it makes sense)
 
 | Package | What it adds |
 |---|---|
-| `jeffersongoncalves/filament-admin`, `filament-user` | The `Admin`/`User` base models + Filament resources for managing them |
+| `jeffersongoncalves/filament-admin`, `filament-user` | The `UserPlugin`/`AdminPlugin` Filament resources for managing users/admins, the `PanelAccess`/`FilamentAdmin` panel-gating helpers, the developer-login/profile config keys. Their own bundled `Models\User`/`Models\Admin` classes are not what `App\Models\User`/`Admin` extend — see the note above |
 | `jeffersongoncalves/filament-pwa` + `jeffersongoncalves/laravel-pwa-favicon` | Installable PWA: `/manifest.json`, full icon set, `<head>` metas — see "Vite and the favicon assets" below |
 | `jeffersongoncalves/laravel-favicon` | Plain `/favicon.ico` + `/browserconfig.xml` outside the PWA manifest |
 | `joaopaulolndev/filament-edit-profile` | The "My Profile" page (locale, theme color, avatar, Sanctum tokens, MFA, browser sessions) |

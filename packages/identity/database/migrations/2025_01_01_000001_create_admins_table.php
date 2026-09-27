@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('admins', function (Blueprint $table) {
@@ -19,17 +16,14 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-            $table->string(config('filament-edit-profile.avatar_column', 'avatar_url'))->nullable();
+            $table->string('avatar_url')->nullable();
             $table->json('custom_fields')->nullable();
-            $table->string(config('filament-edit-profile.locale_column', 'locale'))->nullable();
-            $table->string(config('filament-edit-profile.theme_color_column', 'theme_color'))->nullable();
+            $table->string('locale')->nullable();
+            $table->string('theme_color')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('admins');
