@@ -68,7 +68,8 @@ cd apps/admin   && npm run build    # required before booting — Filament panel
 
 ## Roadmap (not built yet)
 
-- `apps/web`: a separate frontend template (its own repo, mirroring the spirit of this one and of `base_clean_arch_bloc`) gets built, then referenced/dropped in here as a sibling of `apps/backend` and `apps/admin`.
+- `apps/web`: a separate frontend template (its own repo, `base_nuxt_modular`, mirroring the spirit of this one and of `base_clean_arch_bloc`) gets built, then referenced/dropped in here as a sibling of `apps/backend` and `apps/admin`.
+- `apps/backend` has no reference API surface yet — no Sanctum, no example JSON endpoint over `packages/withdrawals`. `WithdrawalResource` is the reference for Filament; there's no equivalent "how does `apps/web` actually call this" reference for the API side yet.
 - `composer create-project` wizard for bootstrapping a fresh project from this template (rename the `acme` vendor/namespace throughout, prompt for the real one).
 
 Done: this repo is a real, runnable monorepo — `apps/backend` and `apps/admin` both consume `packages/withdrawals` (proving the path-repository + `ServiceProvider` auto-discovery mechanism works across two independent Laravel apps, not just within one); `apps/admin` has three working Filament panels; `make check` runs Pint, Rector, PHPStan (Larastan) and Pest cleanly across both apps and every `packages/*`; `.claude/skills/new-module/` codifies the exact steps used to build `withdrawals` by hand. Not just documented — proven and enforced by `make check`.
