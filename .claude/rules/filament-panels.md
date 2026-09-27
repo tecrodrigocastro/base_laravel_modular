@@ -24,16 +24,16 @@ class AdminPanelProvider extends PanelProvider
 }
 ```
 
-Repeat this shape once per audience that needs its own panel — e.g. a second `PanelProvider` with `id('fornecedores')`, `path('fornecedores')`, `authGuard('fornecedor')`, discovering from `app_path('Filament/Fornecedores/Resources')`.
+Repeat this shape once per audience that needs its own panel — e.g. a second `PanelProvider` with `id('suppliers')`, `path('suppliers')`, `authGuard('supplier')`, discovering from `app_path('Filament/Suppliers/Resources')`.
 
 ## How this relates to `packages/*`
 
 Panels and packages are **orthogonal groupings** of the same underlying domain:
 
-- A **package** (`packages/{module}/`) groups Models/Actions/DTOs by *what business domain they belong to* (produtos, pagamentos, moderação...).
+- A **package** (`packages/{module}/`) groups Models/Actions/DTOs by *what business domain they belong to* (products, withdrawals, moderation...).
 - A **panel** groups Filament Resources by *who is allowed to see them* (an internal admin, an external partner, a specific role).
 
-A single panel's Resources can — and usually will — span multiple packages (an admin panel showing both `Produto` and `Pedido` resources, each backed by its own package). The `Resources/` classes themselves are presentation code and live in the Filament app's own `app/Filament/{Panel}/Resources/`, never inside `packages/*` — a package should not know or care that Filament exists. A Resource class imports the package's Model/Action, not the other way around.
+A single panel's Resources can — and usually will — span multiple packages (an admin panel showing both `Product` and `Order` resources, each backed by its own package). The `Resources/` classes themselves are presentation code and live in the Filament app's own `app/Filament/{Panel}/Resources/`, never inside `packages/*` — a package should not know or care that Filament exists. A Resource class imports the package's Model/Action, not the other way around.
 
 ## Auth guards
 

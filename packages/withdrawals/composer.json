@@ -1,0 +1,24 @@
+{
+	"name": "acme/withdrawals",
+	"description": "",
+	"type": "library",
+	"version": "1.0",
+	"license": "proprietary",
+	"require": {},
+	"autoload": {
+		"psr-4": {
+			"Acme\\Withdrawals\\": "src/",
+			"Acme\\Withdrawals\\Tests\\": "tests/",
+			"Acme\\Withdrawals\\Database\\Factories\\": "database/factories/",
+			"Acme\\Withdrawals\\Database\\Seeders\\": "database/seeders/"
+		}
+	},
+	"minimum-stability": "stable",
+	"extra": {
+		"laravel": {
+			"providers": [
+				"Acme\\Withdrawals\\Providers\\WithdrawalsServiceProvider"
+			]
+		}
+	}
+}

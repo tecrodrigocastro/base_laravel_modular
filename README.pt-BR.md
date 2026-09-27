@@ -6,7 +6,14 @@ Um **template** Laravel para monólito modular: um pacote Composer por módulo d
 
 Este repositório é feito pra ser clonado/copiado como ponto de partida de um projeto novo, não pra crescer virando um produto em si — mesmo espírito do [`base_clean_arch_bloc`](../base_clean_arch_bloc), seu equivalente em Flutter.
 
-> **Status:** estágio inicial. O que existe hoje é a documentação de arquitetura e as convenções (`CLAUDE.md`, `.claude/rules/`). Ainda não tem app Laravel de verdade rodando, gerador de módulo automatizado nem wizard de criação de projeto — ver a seção Roadmap.
+> **Status:** estágio inicial, mas já roda. É um app Laravel de verdade (formato single-project) com `packages/withdrawals` como módulo de referência totalmente implementado. Ainda falta: um skill `new-module` e um wizard de criação de projeto pra single-project vs monorepo-split — ver a seção Roadmap.
+
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+php artisan migrate
+./vendor/bin/pest
+```
 
 > **Trabalhando com assistentes de IA**: este projeto tem `CLAUDE.md` e `.claude/rules/` pra que o Claude Code (ou qualquer assistente que leia `CLAUDE.md`) já conheça a arquitetura e as convenções de nomenclatura antes de gerar qualquer coisa.
 
@@ -54,7 +61,7 @@ Justificativa completa: [`.claude/rules/architecture.md`](.claude/rules/architec
 
 ## Gerador
 
-A geração de módulo é pensada pra rodar em cima do [`internachi/modular`](https://github.com/InterNACHI/modular) (`php artisan module:make {nome}`) em vez de boilerplate feito na mão. Ainda não está plugado neste template.
+A geração de módulo roda em cima do [`internachi/modular`](https://github.com/InterNACHI/modular) (`php artisan make:module {nome}`) em vez de boilerplate feito na mão, configurado em `config/app-modules.php` pra usar `packages/` e um namespace placeholder `Acme` — troque os dois pelo vendor/namespace real do seu projeto. O esqueleto gerado é preenchido na mão, seguindo `packages/withdrawals/` como forma de referência.
 
 ## Filament
 
@@ -62,6 +69,7 @@ O app que hospeda o Filament usa o [`jeffersongoncalves/filakitv5`](https://gith
 
 ## Roadmap
 
-- [ ] `.claude/skills/new-module/` encapsulando o `module:make` com as convenções deste template (Actions/Contracts/Adapters, stub de teste, wiring) — espelha o skill `new-feature` do `base_clean_arch_bloc`.
+- [x] Um módulo de referência totalmente implementado (`packages/withdrawals`, espelhando o `auth` do `base_clean_arch_bloc`) que os módulos novos imitam.
+- [ ] `.claude/skills/new-module/` encapsulando o `make:module` com as convenções deste template (Actions/Contracts/Adapters, stub de teste, wiring) — espelha o skill `new-feature` do `base_clean_arch_bloc`.
 - [ ] Wizard de `composer create-project` (`post-create-project-cmd`, via `laravel/prompts`) perguntando single-project vs monorepo-split na criação e reorganizando a árvore de arquivos de acordo.
-- [ ] Um módulo de referência totalmente implementado (espelhando o `auth` do `base_clean_arch_bloc`) que os módulos novos imitam.
+- [ ] Filament plugado, seguindo `.claude/rules/filament-panels.md`.

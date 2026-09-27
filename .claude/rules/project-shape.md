@@ -14,8 +14,8 @@ repo/
     Filament/
       Admin/Resources/       # consumes packages/* Models/Actions, never the other way around
   packages/
-    comunidades/
-    pagamentos/
+    communities/
+    withdrawals/
   composer.json              # "repositories": [{ "type": "path", "url": "packages/*" }]
 ```
 
@@ -36,8 +36,8 @@ repo/
       app/Filament/Admin/Resources/   # consumes packages/* Models/Actions
     web/                   # optional: Nuxt storefront, talks to apps/backend's API
   packages/
-    comunidades/
-    pagamentos/
+    communities/
+    withdrawals/
   # each apps/*/composer.json:
   # "repositories": [{ "type": "path", "url": "../../packages/*" }]
 ```

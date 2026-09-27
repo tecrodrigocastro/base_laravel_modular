@@ -6,7 +6,14 @@ A Laravel **template** for a modular monolith: one Composer package per business
 
 This repo is meant to be cloned/copied as the starting point for a new project, not extended into a product itself — same spirit as [`base_clean_arch_bloc`](../base_clean_arch_bloc), its Flutter counterpart.
 
-> **Status:** early stage. What exists today is the architecture documentation and conventions (`CLAUDE.md`, `.claude/rules/`). There is no bootstrapped Laravel app, no module generator wired up, and no project-creation wizard yet — see the Roadmap section.
+> **Status:** early stage, but runnable. This is a real Laravel app (single-project shape) with `packages/withdrawals` as a fully-implemented reference module. What's still missing: a `new-module` skill and a project-creation wizard for single-project vs monorepo-split — see the Roadmap section.
+
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+php artisan migrate
+./vendor/bin/pest
+```
 
 > **Working with AI assistants**: this project ships a `CLAUDE.md` and `.claude/rules/` so Claude Code (or any assistant that reads `CLAUDE.md`) already knows the architecture and naming conventions before generating anything.
 
@@ -54,7 +61,7 @@ Full rationale: [`.claude/rules/architecture.md`](.claude/rules/architecture.md)
 
 ## Generator
 
-Module scaffolding is meant to run on top of [`internachi/modular`](https://github.com/InterNACHI/modular) (`php artisan module:make {name}`) instead of hand-rolled boilerplate. Not wired into this template yet.
+Module scaffolding runs on top of [`internachi/modular`](https://github.com/InterNACHI/modular) (`php artisan make:module {name}`) instead of hand-rolled boilerplate, configured in `config/app-modules.php` to use `packages/` and an `Acme` placeholder namespace — swap both for your real vendor/namespace. Fill in the generated skeleton by hand, following `packages/withdrawals/` as the reference shape.
 
 ## Filament
 
@@ -62,6 +69,7 @@ Whichever app hosts Filament uses [`jeffersongoncalves/filakitv5`](https://githu
 
 ## Roadmap
 
-- [ ] `.claude/skills/new-module/` wrapping `module:make` with this template's conventions (Actions/Contracts/Adapters, test stub, wiring) — mirrors `base_clean_arch_bloc`'s `new-feature` skill.
+- [x] A fully-implemented reference module (`packages/withdrawals`, mirroring `auth` in `base_clean_arch_bloc`) that new modules imitate.
+- [ ] `.claude/skills/new-module/` wrapping `make:module` with this template's conventions (Actions/Contracts/Adapters, test stub, wiring) — mirrors `base_clean_arch_bloc`'s `new-feature` skill.
 - [ ] `composer create-project` wizard (`post-create-project-cmd`, via `laravel/prompts`) asking single-project vs monorepo-split at creation time and rewiring the tree accordingly.
-- [ ] A fully-implemented reference module (mirroring `auth` in `base_clean_arch_bloc`) that new modules imitate.
+- [ ] Filament wired in, following `.claude/rules/filament-panels.md`.
