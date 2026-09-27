@@ -80,4 +80,4 @@ Full rationale: [`.claude/rules/architecture.md`](.claude/rules/architecture.md)
 - [x] `apps/admin` with three working Filament panels and a reference Resource over the shared module.
 - [x] `.claude/skills/new-module/` wrapping `make:module` with this template's conventions (Actions/Contracts/Adapters, test stub, wiring) — mirrors `base_clean_arch_bloc`'s `new-feature` skill.
 - [x] PHPStan (Larastan), Pint, Rector and a root `Makefile` orchestrating both apps; `laravel/boost` for AI guidelines.
-- [ ] `apps/web`: a separate frontend template, built on its own, then referenced/dropped in here as a sibling of `apps/backend` and `apps/admin`.
+- [ ] `apps/web`: [`base_nuxt_modular`](https://github.com/tecrodrigocastro/base_nuxt_modular) exists as its own repo (module-per-feature convention, `login` reference module, `HttpClient` already shaped to pair with this repo's `apps/backend`) — still needs to be dropped in here as a sibling of `apps/backend` and `apps/admin`.

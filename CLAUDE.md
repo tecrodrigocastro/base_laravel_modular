@@ -68,7 +68,7 @@ cd apps/admin   && npm run build    # required before booting — Filament panel
 
 ## Roadmap (not built yet)
 
-- `apps/web`: a separate frontend template (its own repo, `base_nuxt_modular`, mirroring the spirit of this one and of `base_clean_arch_bloc`) gets built, then referenced/dropped in here as a sibling of `apps/backend` and `apps/admin`.
+- `apps/web`: [`base_nuxt_modular`](https://github.com/tecrodrigocastro/base_nuxt_modular) exists as its own repo (`login` reference module, `HttpClient` already shaped to match this repo's `apps/backend`) — still needs to be dropped in here as `apps/web`, a sibling of `apps/backend` and `apps/admin`.
 - `apps/backend` has no reference API surface yet — no Sanctum, no example JSON endpoint over `packages/withdrawals`. `WithdrawalResource` is the reference for Filament; there's no equivalent "how does `apps/web` actually call this" reference for the API side yet.
 - `composer create-project` wizard for bootstrapping a fresh project from this template (rename the `acme` vendor/namespace throughout, prompt for the real one).
 
