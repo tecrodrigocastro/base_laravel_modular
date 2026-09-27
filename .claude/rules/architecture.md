@@ -19,7 +19,7 @@ $withdrawal->update(['status' => 'paid']);
 app(ApproveWithdrawalAction::class)->execute($withdrawal);
 ```
 
-This is what keeps two separate apps (API + admin panel in monorepo-split shape) from drifting: if both call the same Action, both get the same side effects, the same validation, the same events dispatched. Without this rule, an admin panel with direct Eloquent access is a second front door into the same data, and it *will* eventually skip something the API enforces.
+This is what keeps `apps/backend` and `apps/admin` from drifting: if both call the same Action, both get the same side effects, the same validation, the same events dispatched. Without this rule, an admin panel with direct Eloquent access is a second front door into the same data, and it *will* eventually skip something the API enforces.
 
 ## Contract + Adapter for modules likely to become a service
 
@@ -53,7 +53,7 @@ A module never queries another module's tables directly — no Eloquent relation
 
 ## Path repositories: how the packages actually get wired in
 
-Each consuming app (`apps/backend`, `apps/admin`, or the single app in single-project shape) declares the packages directory as a Composer path repository and requires the modules it needs like any other dependency:
+Each consuming app (`apps/backend`, `apps/admin`) declares the packages directory as a Composer path repository and requires the modules it needs like any other dependency:
 
 ```json
 {

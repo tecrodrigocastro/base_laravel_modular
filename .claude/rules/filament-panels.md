@@ -1,10 +1,10 @@
 # Filament panels: structure and reference
 
-Whichever app hosts Filament — the single app in single-project shape, or `apps/admin` in monorepo-split shape — follows the same technique: **one `PanelProvider` per surface/audience**, each with its own `id()`, `path()` and `authGuard()`, discovering its Resources from its own namespaced folder so panels never leak into each other's navigation even though they're compiled into the same app.
+`apps/admin` follows the same technique for every panel it hosts: **one `PanelProvider` per surface/audience**, each with its own `id()`, `path()` and `authGuard()`, discovering its Resources from its own namespaced folder so panels never leak into each other's navigation even though they're compiled into the same app. `apps/admin/app/Providers/Filament/AdminPanelProvider.php` is a real, working instance of this — `id('admin')`, `path('admin')`, `authGuard('admin')` (guard configured in `apps/admin/config/auth.php`), discovering from `app/Filament/Admin/Resources`. `WithdrawalResource` in that folder imports `Acme\Withdrawals\Models\Withdrawal` straight from the shared package — the concrete example of the next paragraph.
 
-## Reference implementation
+## Going further
 
-[`jeffersongoncalves/filakitv5`](https://github.com/jeffersongoncalves/filakitv5) is a working Laravel 13 + Filament 5 starter kit that already wires exactly this — multiple panels, each its own auth guard, plus login, profile, PWA and i18n already solved. Use it as the base for whichever app hosts Filament in this template, instead of wiring panels from scratch. Its `AdminPanelProvider` shape:
+`apps/admin` here only has a bare `admin` panel wired — no login customization, no profile page, no PWA, no i18n. For a fuller starting point that already solves those, [`jeffersongoncalves/filakitv5`](https://github.com/jeffersongoncalves/filakitv5) is a working Laravel + Filament kit with multiple panels, each its own auth guard, plus login/profile/PWA/i18n already built. Its `AdminPanelProvider` follows the same shape `apps/admin` does here:
 
 ```php
 class AdminPanelProvider extends PanelProvider
@@ -24,7 +24,7 @@ class AdminPanelProvider extends PanelProvider
 }
 ```
 
-Repeat this shape once per audience that needs its own panel — e.g. a second `PanelProvider` with `id('suppliers')`, `path('suppliers')`, `authGuard('supplier')`, discovering from `app_path('Filament/Suppliers/Resources')`.
+Repeat this shape once per audience that needs its own panel in `apps/admin` — e.g. a second `PanelProvider` with `id('suppliers')`, `path('suppliers')`, `authGuard('supplier')`, discovering from `app_path('Filament/Suppliers/Resources')`.
 
 ## How this relates to `packages/*`
 
@@ -37,4 +37,4 @@ A single panel's Resources can — and usually will — span multiple packages (
 
 ## Auth guards
 
-One guard per audience, configured in `config/auth.php` (`admin`, and one per additional panel), matched 1:1 with each `PanelProvider`'s `->authGuard()`. This is what keeps, say, a fornecedor from ever hitting the admin panel's routes — Filament's panel middleware rejects it at the guard level, before any authorization logic in a Resource runs.
+One guard per audience, configured in `apps/admin/config/auth.php` (`admin`, and one per additional panel), matched 1:1 with each `PanelProvider`'s `->authGuard()`. This is what keeps, say, a supplier from ever hitting the admin panel's routes — Filament's panel middleware rejects it at the guard level, before any authorization logic in a Resource runs.

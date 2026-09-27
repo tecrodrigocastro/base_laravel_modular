@@ -1,55 +1,29 @@
-# Project shape: single-project vs monorepo-split
+# Monorepo layout
 
-The one thing that never changes between the two shapes is `packages/*` — every business module is always its own Composer package (Models, Actions, DTOs, Enums, Events, Contracts/Adapters, migrations, ServiceProvider), generated and structured the same way regardless of shape. What differs is only the **apps layer** sitting on top of it: how many Laravel apps exist and how each one requires the shared packages.
-
-## single-project
-
-One Laravel app. Everything — API routes, queue workers, and one or more Filament panels — runs in the same process. Filament panels are not `packages/*` modules; they are ordinary Laravel app code (`app/Providers/Filament/{Panel}PanelProvider.php` + `app/Filament/{Panel}/Resources/`) that consumes the shared packages' Models/Actions. See `filament-panels.md` for the panel/guard structure.
-
-```
-repo/
-  app/
-    Providers/Filament/
-      AdminPanelProvider.php
-    Filament/
-      Admin/Resources/       # consumes packages/* Models/Actions, never the other way around
-  packages/
-    communities/
-    withdrawals/
-  composer.json              # "repositories": [{ "type": "path", "url": "packages/*" }]
-```
-
-Pick this when:
-- There is one team, one deploy pipeline, and no near-term reason to release the admin panel independently from the API.
-- You want the simplest possible operational footprint — one process to run, one `composer install`, one `.env`.
-
-## monorepo-split
-
-One Git repository, multiple Laravel apps under `apps/*`, each with its own `composer.json`, each requiring the same `packages/*` via a path repository. A non-Laravel frontend (e.g. a Nuxt storefront) can live in the same monorepo too, as a sibling under `apps/*`, even though it doesn't consume the PHP packages directly — it only talks to `apps/backend` over HTTP. `apps/admin` follows the same panel/guard structure as single-project's Filament app (see `filament-panels.md`), just living in its own Laravel install instead of sharing one with the API.
+This template is one Git repository holding multiple apps under `apps/*`, all sharing the same `packages/*` business modules via Composer path repositories. `packages/*` never changes shape — every business module is its own Composer package (Models, Actions, DTOs, Enums, Events, Contracts/Adapters, migrations, `ServiceProvider`) regardless of which app consumes it.
 
 ```
 repo/
   apps/
-    backend/               # Laravel Octane — the API
-    admin/                 # Laravel + Filament — a separate project
+    backend/               # Laravel API — the source of truth for business writes
+    admin/                 # Laravel + Filament — internal panel(s), see filament-panels.md
       app/Providers/Filament/AdminPanelProvider.php
-      app/Filament/Admin/Resources/   # consumes packages/* Models/Actions
-    web/                   # optional: Nuxt storefront, talks to apps/backend's API
+      app/Filament/Admin/Resources/   # consumes packages/* Models/Actions, never the other way around
+    web/                   # Nuxt — public-facing frontend, talks to apps/backend's API over HTTP
   packages/
-    communities/
-    withdrawals/
-  # each apps/*/composer.json:
+    withdrawals/            # the reference module — see naming-conventions.md
+    {module}/
+  # each apps/backend and apps/admin composer.json:
   # "repositories": [{ "type": "path", "url": "../../packages/*" }]
 ```
 
-Pick this when:
-- The admin panel (or any other surface) genuinely needs its own deploy lifecycle — different release cadence, different team, different scaling profile — from day one.
-- You already know two "front doors" (e.g. API + admin) will both mutate the same data and want the Action/Contract discipline (see `architecture.md`) enforced across process boundaries from the start, not bolted on later.
+## Why one repo, several apps
 
-## Why this is a per-project decision, not a permanent one
+- **`apps/backend`** owns the API and every write path — anything that mutates a `packages/*` Model with business rules behind it goes through this app or through a queue worker it runs, calling the module's `Actions/` (see `architecture.md`). It's the one app every other surface ultimately depends on.
+- **`apps/admin`** is a separate Laravel install specifically because an internal panel (Filament) has a different deploy cadence, different auth surface, and different operational profile than the public API — see `filament-panels.md` for how it consumes `packages/*` without ever bypassing the Action rule.
+- **`apps/web`** doesn't touch `packages/*` or Composer at all — it's a plain HTTP client of `apps/backend`'s API, living in the same repo purely for the convenience of coordinated changes (a backend endpoint and the frontend page that calls it can land in one commit).
+- A single repository (rather than one per app) means a business-rule change that touches both `apps/backend` and `apps/admin` — because both call the same `packages/*` Action — lands in one PR, with no cross-repo version to pin or coordinate.
 
-Start with whichever shape matches today's team size and constraints — single-project is simpler to operate and should be the default unless something in the project already demands otherwise. Moving from single-project to monorepo-split later is mechanical precisely because `packages/*` never changes shape: you add a second `apps/*` folder, give it its own `composer.json` pointing at the same `packages/*`, and move the surface (e.g. the admin panel) into it. The module boundary was never coupled to the apps boundary, so splitting an app doesn't touch a single package.
+## If you don't need the split
 
-## How to tell which shape a concrete project uses
-
-Check for an `apps/` directory at the repo root. If it exists, the project is monorepo-split and each subfolder is an independent Laravel (or other) app with its own `composer.json`/lockfile. If there is no `apps/` directory and `packages/*` is required straight from a root-level `composer.json`, the project is single-project.
+Nothing about `packages/*` requires multiple apps. A small project with no separate internal panel can fold `apps/admin`'s responsibility into `apps/backend` itself — Filament panel code (`app/Providers/Filament/`, `app/Filament/{Panel}/Resources/`) just lives inside the one app instead of a sibling one, still consuming the same `packages/*` the same way. Start with the split only if you already know a surface needs its own deploy lifecycle; collapsing two apps into one later is easy precisely because `packages/*` never had to change.

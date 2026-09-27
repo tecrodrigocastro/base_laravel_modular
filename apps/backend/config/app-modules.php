@@ -45,7 +45,7 @@ return [
 	|
 	*/
 
-	'modules_directory' => 'packages',
+	'modules_directory' => '../../packages',
 	
 	/*
 	|--------------------------------------------------------------------------
