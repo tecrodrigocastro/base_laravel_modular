@@ -4,7 +4,7 @@
 
 A **monorepo template** for a Laravel modular monolith: `apps/backend` (API), `apps/admin` (Filament, three panels), and one Composer package per business module under `packages/*`, shared by both apps. `apps/web` is reserved but not scaffolded here — a separate frontend template gets dropped in and referenced later; it only ever talks to `apps/backend`'s HTTP API, never `packages/*`.
 
-This repo is meant to be cloned/copied as the starting point for a new project, not extended into a product itself — same spirit as [`base_clean_arch_bloc`](../base_clean_arch_bloc), its Flutter counterpart.
+This repo is a [GitHub template repository](https://docs.github.com/articles/creating-a-repository-from-a-template) — use the **"Use this template"** button (or `gh repo create my-project --template tecrodrigocastro/base_laravel_modular`) to start a new project with this content and a fresh Git history, not extended into a product itself — same spirit as [`base_clean_arch_bloc`](../base_clean_arch_bloc), its Flutter counterpart.
 
 > **Status:** early stage, but runnable and enforced. `apps/backend` and `apps/admin` are both real Laravel apps, both consuming `packages/withdrawals` as a fully-implemented reference module; `apps/admin` has three working Filament panels (adapted from FilaKit). `make check` runs Pint, Rector, PHPStan and Pest cleanly across both apps. What's still missing: the `apps/web` frontend — see the Roadmap section.
 

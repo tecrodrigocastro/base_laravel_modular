@@ -4,7 +4,7 @@
 
 Um **template de monorepo** pra um monólito modular Laravel: `apps/backend` (API), `apps/admin` (Filament, três painéis), e um pacote Composer por módulo de negócio em `packages/*`, compartilhado entre os dois apps. O `apps/web` está reservado mas ainda não foi montado aqui — um template de frontend separado entra depois e é referenciado; ele só fala com a API do `apps/backend` por HTTP, nunca com `packages/*`.
 
-Este repositório é feito pra ser clonado/copiado como ponto de partida de um projeto novo, não pra crescer virando um produto em si — mesmo espírito do [`base_clean_arch_bloc`](../base_clean_arch_bloc), seu equivalente em Flutter.
+Este repositório é um [template repository do GitHub](https://docs.github.com/pt/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template) — use o botão **"Use this template"** (ou `gh repo create meu-projeto --template tecrodrigocastro/base_laravel_modular`) pra começar um projeto novo com esse conteúdo e histórico de Git limpo, não pra crescer virando um produto em si — mesmo espírito do [`base_clean_arch_bloc`](../base_clean_arch_bloc), seu equivalente em Flutter.
 
 > **Status:** estágio inicial, mas já roda e é verificado. `apps/backend` e `apps/admin` são dois apps Laravel de verdade, os dois consumindo `packages/withdrawals` como módulo de referência totalmente implementado; `apps/admin` tem três painéis Filament funcionando (adaptados do FilaKit). `make check` roda Pint, Rector, PHPStan e Pest limpos nos dois apps. Ainda falta: o frontend do `apps/web` — ver a seção Roadmap.
 
